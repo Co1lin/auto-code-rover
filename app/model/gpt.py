@@ -48,6 +48,7 @@ class OpenaiModel(Model):
         cost_per_input: float,
         cost_per_output: float,
         parallel_tool_call: bool = False,
+        base_url: str | None = None,
     ):
         if self._initialized:
             return
@@ -55,6 +56,7 @@ class OpenaiModel(Model):
         # client for making request
         self.client: OpenAI | None = None
         self._initialized = True
+        self.base_url = base_url
 
     def setup(self) -> None:
         """
@@ -62,7 +64,7 @@ class OpenaiModel(Model):
         """
         if self.client is None:
             key = self.check_api_key()
-            self.client = OpenAI(api_key=key)
+            self.client = OpenAI(api_key=key, base_url=self.base_url)
 
     def check_api_key(self) -> str:
         key = os.getenv("OPENAI_KEY")
@@ -212,6 +214,15 @@ class Gpt4o_20240513(OpenaiModel):
             "gpt-4o-2024-05-13", 0.000005, 0.000015, parallel_tool_call=True
         )
         self.note = "Multimodal model. Up to Oct 2023."
+
+
+class VLLM(OpenaiModel):
+    def __init__(self):
+        super().__init__(
+            "vllm8888", 0.000005, 0.000015, parallel_tool_call=True,
+            base_url="http://localhost:8888/v1",
+        )
+        self.note = self.base_url
 
 
 class Gpt4_Turbo20240409(OpenaiModel):
